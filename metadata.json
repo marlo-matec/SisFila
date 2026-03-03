@@ -1,0 +1,7 @@
+{
+  "name": "SisFila",
+  "description": "Sistema inteligente de gestão de filas com Totem, TV, Guichê e Relatórios analisados por Gemini 2.5.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

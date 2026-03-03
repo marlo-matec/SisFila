@@ -1,0 +1,16 @@
+{
+  "name": "SisFila - Gestão de Filas",
+  "short_name": "SisFila",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "description": "Sistema de gestão de filas inteligente.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

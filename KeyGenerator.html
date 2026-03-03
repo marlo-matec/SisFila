@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Chaves - SisFila</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1e293b; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #334155; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h1 { margin-top: 0; font-size: 1.5rem; text-align: center; color: #60a5fa; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: #cbd5e1; font-weight: bold; }
+        input, select { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.5rem; border: 1px solid #475569; background: #1e293b; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 0.75rem; background: #2563eb; color: white; border: none; border-radius: 0.5rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #1d4ed8; }
+        .result { margin-top: 1.5rem; background: #0f172a; padding: 1rem; border-radius: 0.5rem; border: 1px solid #1e293b; text-align: center; word-break: break-all; font-family: monospace; display: none; }
+        .result.show { display: block; }
+        .copy-btn { background: transparent; color: #94a3b8; font-size: 0.75rem; margin-top: 0.5rem; }
+        .copy-btn:hover { color: white; background: transparent; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>SisFila KeyGen</h1>
+        
+        <label>Nome do Cliente (Exato)</label>
+        <input type="text" id="name" placeholder="Ex: Empresa LTDA">
+        
+        <label>E-mail do Cliente (Exato)</label>
+        <input type="email" id="email" placeholder="Ex: contato@empresa.com">
+        
+        <label>Validade</label>
+        <select id="days">
+            <option value="30">30 Dias (Mensal)</option>
+            <option value="365">365 Dias (Anual)</option>
+            <option value="3650">Vitalício (10 anos)</option>
+        </select>
+        
+        <button onclick="generateKey()">GERAR CHAVE</button>
+        
+        <div id="result" class="result">
+            <span id="keyOutput" style="color: #4ade80; font-size: 1.1rem;"></span>
+            <button class="copy-btn" onclick="copyKey()">Copiar</button>
+        </div>
+    </div>
+
+    <script>
+        const SECRET_KEY = "SISFILA_SECURE_SIGNATURE_V1";
+
+        async function generateKey() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const days = parseInt(document.getElementById('days').value);
+            
+            if (!name || !email) {
+                alert("Preencha Nome e E-mail");
+                return;
+            }
+
+            const expiryDate = Date.now() + (days * 24 * 60 * 60 * 1000);
+            const expiryHex = expiryDate.toString(36).toUpperCase();
+            
+            const payload = `${name.toLowerCase()}|${email.toLowerCase()}|${expiryHex}`;
+            
+            // HMAC SHA-256 Implementation using Web Crypto API
+            const encoder = new TextEncoder();
+            const keyData = encoder.encode(SECRET_KEY);
+            const msgData = encoder.encode(payload);
+
+            const cryptoKey = await crypto.subtle.importKey(
+                "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+            );
+
+            const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
+            const signatureArray = Array.from(new Uint8Array(signatureBuffer));
+            const signatureHex = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            const shortSignature = signatureHex.substring(0, 12).toUpperCase();
+            const finalKey = `SIS-${expiryHex}-${shortSignature}`;
+            
+            document.getElementById('keyOutput').innerText = finalKey;
+            document.getElementById('result').classList.add('show');
+        }
+
+        function copyKey() {
+            const key = document.getElementById('keyOutput').innerText;
+            navigator.clipboard.writeText(key);
+            alert("Copiado!");
+        }
+    </script>
+</body>
+</html>
